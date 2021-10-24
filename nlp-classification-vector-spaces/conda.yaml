@@ -1,6 +1,8 @@
 name: dlai-nlp
 dependencies:
-  - python==3.7
-  - nltk==3.4.5
-  - pandas==0.25.1
-  - numpy==1.17.2
+  - python=3.7
+  - nltk=3.4.5
+  - pandas=0.25.1
+  - numpy=1.17.2
+  - jupyter=1.0.0
+  - matplotlib=3.4.3
