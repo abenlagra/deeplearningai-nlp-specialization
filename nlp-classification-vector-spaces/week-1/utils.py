@@ -1,5 +1,6 @@
 import re
 import string
+from collections import Counter
 
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -45,3 +46,36 @@ def process_tweet(tweet):
     tweet_stems = [stemmer.stem(token) for token in tweet_tokens_cleaned]
 
     return tweet_stems
+
+def build_freqs(tweets, labels):
+    """Build frequencies.
+    Input:
+        tweets: a list of tweets
+        labels: an m x 1 array with the sentiment label of each tweet
+            (either 0 or 1)
+    Output:
+        freqs: a dictionary mapping each (word, sentiment) pair to its
+        frequency
+    """
+
+    # Start with an empty dictionary and populate it by looping over all tweets
+    # and over all processed words in each tweet.
+    freqs = {}
+    for y, tweet in zip(labels, tweets):
+        for word in process_tweet(tweet):
+            pair = (word, y)
+            freqs[pair] = freqs.get(pair, 0) + 1
+    return freqs
+
+def build_freqs_alt(tweets, labels):
+    '''An Alternative implementation using the Counter object from the 
+    collections module. Here we only loop once over all the tweets then update
+    the Counter with new counts. Time execution is slightly longer than the
+    function build_freqs.
+    '''
+
+    freqs = Counter()
+    for tweet, label in zip(tweets, labels):
+        token_label = [(token, label) for token in process_tweet(tweet)]
+        freqs.update(Counter(token_label))
+    return freqs
