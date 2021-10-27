@@ -6,7 +6,15 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import TweetTokenizer
 
-def process_tweet(tweet):
+emoticons = {}
+emoticons['positive'] = ['x-d', ':-)', ":'-)", '8)', ':o)', '>:)', ':-p', ';)', '8-d', ':p', 'xp', ':^)',
+                         ':-b', '8d', ':}', '=)', '=-d', ':)', '=p', ':3', ':b', ':^*', '=d', ':]', ':>', '=-3', 'x-p', ':d', '>:-)',
+                         ":')", ':*', '<3', '=]', ':-d', 'xd', '=3', ':c)', ':-))', '>;)', '>:p']
+emoticons['negative'] = [':\\', ':l', ':<', ':s', ':-||', ';(', ":'-(", '>.<', '=\\', ':{', '=/', ':(', ':c', '>:[', ':-c', '>:(', '>:/',
+                         ':-(', '=l', '>:\\', ':-/', ":'(", ':[', ':@', ':-<', ':-[']
+
+
+def process_tweet(tweet, remove_emoticons=False):
     ''' This function processes the tweets in order to normalize them. In
     particular, the processing consists of:
     - Removing hyperlinks, twitter marks and styles
@@ -28,8 +36,8 @@ def process_tweet(tweet):
 
     # Tokenizing the Tweet
     tokenizer = TweetTokenizer(preserve_case=False,
-    strip_handles=True,
-    reduce_len=True)
+                               strip_handles=True,
+                               reduce_len=True)
 
     tweet_tokens = tokenizer.tokenize(clean_tweet)
 
@@ -37,8 +45,13 @@ def process_tweet(tweet):
     stopwords_english = stopwords.words('english')
 
     tweet_tokens_cleaned = [token for token in tweet_tokens
-    if token not in stopwords_english
-    and token not in string.punctuation]
+                            if token not in stopwords_english
+                            and token not in string.punctuation]
+
+    # Removing positive and negative emoticons
+    if remove_emoticons:
+        tweet_tokens_cleaned = [token for token in tweet_tokens_cleaned
+                                if token not in (emoticons['positive'] + emoticons['negative'])]
 
     # Stemming
     stemmer = PorterStemmer()
@@ -47,7 +60,8 @@ def process_tweet(tweet):
 
     return tweet_stems
 
-def build_freqs(tweets, labels):
+
+def build_freqs(tweets, labels, remove_emoticons = False):
     """Build frequencies.
     Input:
         tweets: a list of tweets
@@ -62,12 +76,13 @@ def build_freqs(tweets, labels):
     # and over all processed words in each tweet.
     freqs = {}
     for y, tweet in zip(labels, tweets):
-        for word in process_tweet(tweet):
+        for word in process_tweet(tweet, remove_emoticons):
             pair = (word, y)
             freqs[pair] = freqs.get(pair, 0) + 1
     return freqs
 
-def build_freqs_alt(tweets, labels):
+
+def build_freqs_alt(tweets, labels, remove_emoticons = False):
     '''An Alternative implementation using the Counter object from the 
     collections module. Here we only loop once over all the tweets then update
     the Counter with new counts. Time execution is slightly longer than the
@@ -76,6 +91,6 @@ def build_freqs_alt(tweets, labels):
 
     freqs = Counter()
     for tweet, label in zip(tweets, labels):
-        token_label = [(token, label) for token in process_tweet(tweet)]
+        token_label = [(token, label) for token in process_tweet(tweet, remove_emoticons)]
         freqs.update(Counter(token_label))
     return freqs
